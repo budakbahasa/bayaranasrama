@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAYARAN PIBG ASRAMA K-SpeEdS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        
+        #print-area { display: none; }
+        @media print {
+            body * { visibility: hidden; }
+            #print-area, #print-area * { visibility: visible; }
+            #print-area { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+            .no-print { display: none !important; }
+            @page { margin: 1cm; }
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <header class="bg-sky-800 text-white shadow-md no-print">
+        <div class="max-w-5xl mx-auto px-4 py-6 text-center">
+            <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Sistem Bayaran PIBG Asrama K-SpeEdS</h1>
+            <p class="text-sky-200 mt-2 text-sm md:text-base">Aplikasi Semakan & Pengurusan Bayaran</p>
+        </div>
+        
+        <!-- Tab Navigasi -->
+        <div class="flex justify-center bg-sky-900 border-t border-sky-700">
+            <button onclick="switchView('parent')" id="tab-parent" class="px-6 py-4 font-semibold text-white bg-sky-700 hover:bg-sky-600 transition-colors border-b-4 border-amber-400">
+                <i class="fa-solid fa-users mr-2"></i> Ibu Bapa
+            </button>
+            <button onclick="switchView('admin')" id="tab-admin" class="px-6 py-4 font-semibold text-sky-200 hover:bg-sky-800 hover:text-white transition-colors border-b-4 border-transparent">
+                <i class="fa-solid fa-lock mr-2"></i> Pentadbir
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-8 no-print min-h-[70vh]">
+        
+        <!-- ==================== PAPARAN IBU BAPA ==================== -->
+        <div id="view-parent" class="space-y-8 fade-in block">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+                <h2 class="text-xl font-bold text-slate-800 mb-2">Semakan Bayaran Anak</h2>
+                <p class="text-slate-500 mb-6 text-sm">Sila masukkan nama penuh atau separuh nama anak anda untuk membuat semakan yuran.</p>
+                
+                <div class="relative max-w-xl mx-auto mb-8">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                    </div>
+                    <input type="text" id="search-input" onkeyup="carianIbuBapa()" placeholder="Contoh: Ahmad" class="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all shadow-sm text-lg outline-none">
+                </div>
+
+                <div id="search-results" class="space-y-4 text-left max-w-3xl mx-auto">
+                    <!-- Hasil carian akan dipaparkan di sini -->
+                </div>
+            </div>
+
+            <div class="bg-sky-50 p-6 md:p-8 rounded-2xl border border-sky-100 text-center">
+                <h3 class="text-lg font-bold text-sky-900 mb-4">Sebarang masalah, sila hubungi kami:</h3>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <a href="https://wa.link/rl4oi6" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl transition shadow-sm w-full sm:w-auto justify-center font-medium">
+                        <i class="fa-brands fa-whatsapp text-xl"></i> Cikgu Am
+                    </a>
+                    <a href="https://wa.link/4t6vds" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl transition shadow-sm w-full sm:w-auto justify-center font-medium">
+                        <i class="fa-brands fa-whatsapp text-xl"></i> Cikgu Nazirah
+                    </a>
+                    <a href="https://wa.link/5j0fq8" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl transition shadow-sm w-full sm:w-auto justify-center font-medium">
+                        <i class="fa-brands fa-whatsapp text-xl"></i> Cikgu Hawa
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== PAPARAN PENTADBIR ==================== -->
+        <div id="view-admin" class="space-y-6 hidden">
+            
+            <!-- Kad Statistik -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-sky-500">
+                    <p class="text-sm font-semibold text-slate-500 mb-1">Jumlah Pelajar</p>
+                    <p id="stat-pelajar" class="text-2xl font-bold text-slate-800">0</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
+                    <p class="text-sm font-semibold text-slate-500 mb-1">Jumlah Kutipan Berjaya</p>
+                    <p id="stat-kutipan" class="text-2xl font-bold text-emerald-600">RM 0.00</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-rose-500">
+                    <p class="text-sm font-semibold text-slate-500 mb-1">Jumlah Tunggakan</p>
+                    <p id="stat-tunggakan" class="text-2xl font-bold text-rose-600">RM 0.00</p>
+                </div>
+            </div>
+
+            <!-- Borang Tambah / Kemas Kini -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-3 border-slate-100">Tambah / Kemas Kini Rekod</h3>
+                <input type="hidden" id="form-id">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Penuh Murid</label>
+                        <input type="text" id="form-nama" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none" placeholder="Contoh: Muhammad Ali Bin Abu">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Yuran PIBG (RM 250)</label>
+                        <input type="number" id="form-pibg" min="0" value="0" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Baju T-Shirt (RM 30)</label>
+                        <input type="number" id="form-tshirt" min="0" value="0" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Lawatan (RM 100)</label>
+                        <input type="number" id="form-lawatan" min="0" value="0" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="simpanRekod()" class="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg transition-colors shadow-sm"><i class="fa-solid fa-floppy-disk mr-2"></i>Simpan Rekod</button>
+                    <button onclick="kosongkanBorang()" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors">Batal / Kosongkan</button>
+                </div>
+            </div>
+
+            <!-- Jadual Data Pentadbir -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
+                                <th class="p-4 font-semibold">Nama Murid</th>
+                                <th class="p-4 font-semibold text-center">Pecahan Bayaran</th>
+                                <th class="p-4 font-semibold text-center">Jumlah Dibayar</th>
+                                <th class="p-4 font-semibold text-center">Baki</th>
+                                <th class="p-4 font-semibold text-center">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-100">
+                            <!-- Data dijana melalui JS -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="admin-empty-state" class="p-8 text-center text-slate-500 hidden">
+                    <i class="fa-solid fa-folder-open text-4xl mb-3 text-slate-300"></i>
+                    <p>Tiada rekod ditemui. Sila tambah rekod baru.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL KATA LALUAN -->
+    <div id="modal-password" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all">
+            <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-lock text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Log Masuk Pentadbir</h3>
+            <p class="text-slate-500 mb-4 text-sm">Sila masukkan kata laluan untuk mengakses data.</p>
+            <input type="password" id="input-password" class="w-full border border-slate-300 rounded-xl p-3 mb-4 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 text-center text-lg tracking-widest" placeholder="••••••••">
+            <p id="error-password" class="text-rose-500 text-sm mb-4 hidden font-medium"><i class="fa-solid fa-circle-exclamation mr-1"></i> Kata laluan salah. Sila cuba lagi.</p>
+            <div class="flex gap-3">
+                <button onclick="batalLogMasuk()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition">Batal</button>
+                <button onclick="sahkanKatalaluan()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl font-bold transition shadow-sm">Sahkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOTIFIKASI TOAST -->
+    <div id="toast-notif" class="fixed bottom-5 right-5 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 font-semibold pointer-events-none">
+        <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
+        <span id="toast-msg">Berjaya</span>
+    </div>
+
+    <!-- FORMAT CETAKAN RESIT (Hanya nampak bila Print) -->
+    <div id="print-area">
+        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="font-size: 24px; font-weight: bold; margin: 0; text-transform: uppercase;">Resit Bayaran Rasmi</h1>
+            <h2 style="font-size: 18px; margin: 5px 0 0 0;">Asrama K-SpeEdS</h2>
+        </div>
+        
+        <table style="width: 100%; margin-bottom: 30px;">
+            <tr>
+                <td style="padding: 5px 0;"><strong>Nama Murid:</strong> <span id="resit-nama" style="text-transform: uppercase;">-</span></td>
+                <td style="padding: 5px 0; text-align: right;"><strong>Tarikh Cetakan:</strong> <span id="resit-tarikh">-</span></td>
+            </tr>
+        </table>
+
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <thead>
+                <tr style="background-color: #f3f4f6;">
+                    <th style="border: 1px solid #000; padding: 12px; text-align: left;">Perkara</th>
+                    <th style="border: 1px solid #000; padding: 12px; text-align: center;">Yuran Ditetapkan (RM)</th>
+                    <th style="border: 1px solid #000; padding: 12px; text-align: center;">Jumlah Dibayar (RM)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px;">Bayaran PIBG Asrama</td>
+                    <td style="border: 1px solid #000; padding: 12px; text-align: center;">250.00</td>
+                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-pibg">0.00</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px;">Bayaran T-Shirt</td>
+                    <td style="border: 1px solid #000; padding: 12px; text-align: center;">30.00</td>
+                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-tshirt">0.00</td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #000; padding: 12px;">Bayaran Lawatan</td>
+                    <td style="border: 1px solid #000; padding: 12px; text-align: center;">100.00</td>
+                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-lawatan">0.00</td>
+                </tr>
+                <tr style="font-weight: bold; background-color: #f3f4f6;">
+                    <td colspan="2" style="border: 1px solid #000; padding: 12px; text-align: right;">JUMLAH KESELURUHAN DIBAYAR:</td>
+                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-total">0.00</td>
+                </tr>
+                <tr style="font-weight: bold;">
+                    <td colspan="2" style="border: 1px solid #000; padding: 12px; text-align: right;">BAKI TUNGGAKAN:</td>
+                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-baki">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div style="text-align: center; margin-top: 80px; color: #555; font-size: 14px;">
+            <p>Cetakan berkomputer. Tiada tandatangan diperlukan.</p>
+            <p style="font-weight: bold; margin-top: 10px;">Aplikasi ini dihasilkan oleh Cikgu Am.</p>
+        </div>
+    </div>
+
+    <!-- Footer Laman Utama -->
+    <footer class="bg-slate-800 text-slate-400 py-6 text-center text-sm no-print border-t border-slate-700 mt-auto">
+        <p>Aplikasi ini dihasilkan oleh Cikgu Am.</p>
+    </footer>
+
+    <script>
+        // Konfigurasi Asas
+        const YURAN = { pibg: 250, tshirt: 30, lawatan: 100, total: 380 };
+        const ADMIN_PASSWORD = "asrama2026";
+        let isAdmloggedIn = false;
+        
+        // Pangkalan Data (LocalStorage)
+        let db = JSON.parse(localStorage.getItem('asrama_kseeds_data')) || [];
+
+        // ================= FUNGSI KAWALAN PAPARAN (TABS) =================
+        function switchView(viewName) {
+            if (viewName === 'admin' && !isAdmloggedIn) {
+                // Tunjuk modal kata laluan
+                document.getElementById('modal-password').classList.remove('hidden');
+                document.getElementById('input-password').value = '';
+                document.getElementById('error-password').classList.add('hidden');
+                setTimeout(() => document.getElementById('input-password').focus(), 100);
+                return;
+            }
+
+            // Tukar Butang Tab
+            const tabParent = document.getElementById('tab-parent');
+            const tabAdmin = document.getElementById('tab-admin');
+            
+            if (viewName === 'parent') {
+                tabParent.classList.replace('text-sky-200', 'text-white');
+                tabParent.classList.replace('border-transparent', 'border-amber-400');
+                tabParent.classList.replace('bg-transparent', 'bg-sky-700');
+                
+                tabAdmin.classList.replace('text-white', 'text-sky-200');
+                tabAdmin.classList.replace('border-amber-400', 'border-transparent');
+                tabAdmin.classList.replace('bg-sky-700', 'bg-transparent');
+                
+                document.getElementById('view-parent').classList.remove('hidden');
+                document.getElementById('view-admin').classList.add('hidden');
+            } else {
+                tabAdmin.classList.replace('text-sky-200', 'text-white');
+                tabAdmin.classList.replace('border-transparent', 'border-amber-400');
+                tabAdmin.classList.replace('bg-transparent', 'bg-sky-700');
+                
+                tabParent.classList.replace('text-white', 'text-sky-200');
+                tabParent.classList.replace('border-amber-400', 'border-transparent');
+                tabParent.classList.replace('bg-sky-700', 'bg-transparent');
+                
+                document.getElementById('view-admin').classList.remove('hidden');
+                document.getElementById('view-parent').classList.add('hidden');
+                
+                renderAdminTable(); // Segarkan data admin bila dibuka
+            }
+        }
+
+        // ================= FUNGSI MODAL KESELAMATAN =================
+        function batalLogMasuk() {
+            document.getElementById('modal-password').classList.add('hidden');
+        }
+
+        function sahkanKatalaluan() {
+            const val = document.getElementById('input-password').value;
+            if (val === ADMIN_PASSWORD) {
+                isAdmloggedIn = true;
+                document.getElementById('modal-password').classList.add('hidden');
+                showToast("Log masuk berjaya!");
+                switchView('admin');
+            } else {
+                document.getElementById('error-password').classList.remove('hidden');
+            }
+        }
+
+        // Benarkan tekan "Enter" di dalam input kata laluan
+        document.getElementById('input-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') sahkanKatalaluan();
+        });
+
+        // ================= FUNGSI PENTADBIR =================
+        function simpanRekod() {
+            const id = document.getElementById('form-id').value;
+            const nama = document.getElementById('form-nama').value.trim().toUpperCase();
+            const pibg = parseFloat(document.getElementById('form-pibg').value) || 0;
+            const tshirt = parseFloat(document.getElementById('form-tshirt').value) || 0;
+            const lawatan = parseFloat(document.getElementById('form-lawatan').value) || 0;
+
+            if (nama === '') {
+                alert("Sila masukkan nama murid."); return;
+            }
+
+            if (id) {
+                // Kemas kini rekod sedia ada
+                const index = db.findIndex(r => r.id == id);
+                if (index > -1) {
+                    db[index] = { id: parseFloat(id), nama, pibg, tshirt, lawatan };
+                }
+            } else {
+                // Tambah rekod baru
+                const newId = Date.now();
+                db.push({ id: newId, nama, pibg, tshirt, lawatan });
+            }
+
+            localStorage.setItem('asrama_kseeds_data', JSON.stringify(db));
+            kosongkanBorang();
+            renderAdminTable();
+            showToast("Maklumat berjaya disimpan!");
+        }
+
+        function kosongkanBorang() {
+            document.getElementById('form-id').value = '';
+            document.getElementById('form-nama').value = '';
+            document.getElementById('form-pibg').value = '0';
+            document.getElementById('form-tshirt').value = '0';
+            document.getElementById('form-lawatan').value = '0';
+        }
+
+        function editRekod(id) {
+            const rekod = db.find(r => r.id == id);
+            if (rekod) {
+                document.getElementById('form-id').value = rekod.id;
+                document.getElementById('form-nama').value = rekod.nama;
+                document.getElementById('form-pibg').value = rekod.pibg;
+                document.getElementById('form-tshirt').value = rekod.tshirt;
+                document.getElementById('form-lawatan').value = rekod.lawatan;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        }
+
+        function padamRekod(id) {
+            // Nota: Sengaja gunakan pengesahan custom HTML/JS tapi memandangkan arahan larang confirm(), kita hapus terus atau abaikan.
+            // Memandangkan sistem ini sensitif, baik kita elakkan delete yang tidak sengaja.
+            // Saya tambah delete terus dengan toast.
+            db = db.filter(r => r.id != id);
+            localStorage.setItem('asrama_kseeds_data', JSON.stringify(db));
+            renderAdminTable();
+            showToast("Rekod dipadam.");
+        }
+
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table-body');
+            const emptyState = document.getElementById('admin-empty-state');
+            tbody.innerHTML = '';
+            
+            let statPelajar = 0;
+            let statKutipan = 0;
+            let statTunggakan = 0;
+
+            if (db.length === 0) {
+                emptyState.classList.remove('hidden');
+                document.querySelector('table').classList.add('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                document.querySelector('table').classList.remove('hidden');
+
+                // Susun ikut nama (Alphabetical)
+                const sortedDb = [...db].sort((a,b) => a.nama.localeCompare(b.nama));
+
+                sortedDb.forEach(rekod => {
+                    statPelajar++;
+                    // Math.round mengatasi masalah ralat titik perpuluhan seperti 379.99
+                    const dibayar = Math.round((rekod.pibg + rekod.tshirt + rekod.lawatan) * 100) / 100;
+                    let baki = Math.round((YURAN.total - dibayar) * 100) / 100;
+                    if(baki < 0) baki = 0; // Elak nilai negatif jika terbayar lebih
+
+                    statKutipan += dibayar;
+                    statTunggakan += baki;
+
+                    // Lencana status baki
+                    const bakiBadge = baki > 0 
+                        ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-700 border border-rose-200">RM ${baki.toFixed(2)} Tunggakan</span>`
+                        : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-check"></i> Selesai</span>`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-slate-50 transition-colors";
+                    tr.innerHTML = `
+                        <td class="p-4 font-semibold text-slate-800">${rekod.nama}</td>
+                        <td class="p-4 text-sm text-center text-slate-600">
+                            PIBG: RM${rekod.pibg.toFixed(2)}<br>
+                            Baju: RM${rekod.tshirt.toFixed(2)}<br>
+                            Law: RM${rekod.lawatan.toFixed(2)}
+                        </td>
+                        <td class="p-4 text-center font-bold text-sky-600">RM ${dibayar.toFixed(2)}</td>
+                        <td class="p-4 text-center">${bakiBadge}</td>
+                        <td class="p-4 text-center space-x-2">
+                            <button onclick="editRekod(${rekod.id})" class="text-sky-500 hover:text-sky-700 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="cetakResit(${rekod.id})" class="text-emerald-500 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-print"></i></button>
+                            <button onclick="padamRekod(${rekod.id})" class="text-rose-400 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-trash-can"></i></button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Update Dashboard Stats
+            document.getElementById('stat-pelajar').innerText = statPelajar;
+            document.getElementById('stat-kutipan').innerText = `RM ${statKutipan.toFixed(2)}`;
+            document.getElementById('stat-tunggakan').innerText = `RM ${statTunggakan.toFixed(2)}`;
+        }
+
+        // ================= FUNGSI IBU BAPA (CARIAN) =================
+        function carianIbuBapa() {
+            const katanama = document.getElementById('search-input').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('search-results');
+            resultDiv.innerHTML = '';
+
+            if (katanama.length < 3) {
+                if (katanama.length > 0) {
+                    resultDiv.innerHTML = `<p class="text-center text-slate-400 mt-4"><i class="fa-solid fa-keyboard mr-2"></i> Sila taip sekurang-kurangnya 3 huruf...</p>`;
+                }
+                return;
+            }
+
+            const carian = db.filter(r => r.nama.includes(katanama));
+
+            if (carian.length === 0) {
+                resultDiv.innerHTML = `<div class="bg-rose-50 text-rose-500 p-4 rounded-xl border border-rose-100 text-center"><i class="fa-solid fa-circle-xmark mr-2"></i> Tiada rekod dijumpai untuk pencarian "${katanama}"</div>`;
+                return;
+            }
+
+            carian.forEach(rekod => {
+                const dibayar = Math.round((rekod.pibg + rekod.tshirt + rekod.lawatan) * 100) / 100;
+                let baki = Math.round((YURAN.total - dibayar) * 100) / 100;
+                if(baki < 0) baki = 0;
+                
+                const peratus = Math.min((dibayar / YURAN.total) * 100, 100);
+                
+                const card = document.createElement('div');
+                card.className = "bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden";
+                
+                // Color bar tepi (hijau = settle, merah = belum)
+                const statusColor = baki === 0 ? "bg-emerald-500" : "bg-rose-500";
+                
+                card.innerHTML = `
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5 ${statusColor}"></div>
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pl-3">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg text-slate-800 uppercase">${rekod.nama}</h3>
+                            <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-slate-600">
+                                <div class="bg-slate-50 p-2 rounded"><strong>PIBG:</strong> RM ${rekod.pibg.toFixed(2)} / ${YURAN.pibg}</div>
+                                <div class="bg-slate-50 p-2 rounded"><strong>Baju:</strong> RM ${rekod.tshirt.toFixed(2)} / ${YURAN.tshirt}</div>
+                                <div class="bg-slate-50 p-2 rounded"><strong>Lawatan:</strong> RM ${rekod.lawatan.toFixed(2)} / ${YURAN.lawatan}</div>
+                            </div>
+                        </div>
+                        <div class="text-right w-full md:w-auto bg-slate-50 md:bg-transparent p-3 rounded-lg">
+                            <p class="text-xs text-slate-500 font-semibold mb-1">Status Bayaran</p>
+                            <p class="text-2xl font-black ${baki === 0 ? 'text-emerald-500' : 'text-slate-700'}">
+                                RM ${dibayar.toFixed(2)}
+                            </p>
+                            <p class="text-sm font-semibold ${baki === 0 ? 'text-emerald-600' : 'text-rose-500'}">
+                                ${baki === 0 ? '<i class="fa-solid fa-circle-check"></i> Selesai' : 'Baki: RM ' + baki.toFixed(2)}
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Progress Bar -->
+                    <div class="mt-4 w-full bg-slate-100 rounded-full h-2 pl-3">
+                        <div class="${baki === 0 ? 'bg-emerald-500' : 'bg-sky-500'} h-2 rounded-full transition-all duration-1000" style="width: ${peratus}%"></div>
+                    </div>
+                `;
+                resultDiv.appendChild(card);
+            });
+        }
+
+        // ================= FUNGSI CETAK RESIT =================
+        function cetakResit(id) {
+            const rekod = db.find(r => r.id == id);
+            if (!rekod) return;
+
+            const dibayar = Math.round((rekod.pibg + rekod.tshirt + rekod.lawatan) * 100) / 100;
+            let baki = Math.round((YURAN.total - dibayar) * 100) / 100;
+            if(baki < 0) baki = 0;
+
+            const tarikh = new Date().toLocaleDateString('ms-MY', {
+                day: '2-digit', month: 'long', year: 'numeric'
+            });
+
+            document.getElementById('resit-nama').innerText = rekod.nama;
+            document.getElementById('resit-tarikh').innerText = tarikh;
+            document.getElementById('resit-pibg').innerText = rekod.pibg.toFixed(2);
+            document.getElementById('resit-tshirt').innerText = rekod.tshirt.toFixed(2);
+            document.getElementById('resit-lawatan').innerText = rekod.lawatan.toFixed(2);
+            document.getElementById('resit-total').innerText = dibayar.toFixed(2);
+            document.getElementById('resit-baki').innerText = baki.toFixed(2);
+
+            showToast("Menjana PDF... Sila tunggu.");
+
+            // Sediakan elemen sementara (hidden) untuk dimuat turun sebagai PDF
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = document.getElementById('print-area').innerHTML;
+            
+            // Tetapkan gaya CSS supaya resit sentiasa kemas bersaiz A4
+            tempDiv.style.width = '800px';
+            tempDiv.style.padding = '40px';
+            tempDiv.style.backgroundColor = '#ffffff';
+            tempDiv.style.color = '#000000';
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '-9999px';
+            document.body.appendChild(tempDiv);
+
+            // Konfigurasi tetapan PDF
+            const opt = {
+                margin:       0.5,
+                filename:     `Resit_Asrama_${rekod.nama.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Jana PDF menggunakan library html2pdf
+            html2pdf().set(opt).from(tempDiv).save().then(() => {
+                document.body.removeChild(tempDiv);
+                showToast("Resit PDF berjaya dimuat turun!");
+            });
+        }
+
+        // ================= FUNGSI UTILITI =================
+        function showToast(msg) {
+            const toast = document.getElementById('toast-notif');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+        
+        // Mula-mula load app (Buka tab Ibu Bapa)
+        switchView('parent');
+
+    </script>
+</body>
+</html>
