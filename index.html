@@ -4,72 +4,93 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BAYARAN PIBG ASRAMA K-SpeEdS</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- html2pdf Library untuk Cetak Resit -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
         
-        #print-area { display: none; }
+        /* Sembunyikan elemen tertentu semasa print menggunakan browser biasa */
         @media print {
-            body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { display: block; position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
             .no-print { display: none !important; }
-            @page { margin: 1cm; }
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="bg-slate-50 flex flex-col min-h-screen text-slate-800">
 
-    <header class="bg-sky-800 text-white shadow-md no-print">
-        <div class="max-w-5xl mx-auto px-4 py-6 text-center">
-            <h1 class="text-2xl md:text-3xl font-bold tracking-tight">Sistem Bayaran PIBG Asrama K-SpeEdS</h1>
-            <p class="text-sky-200 mt-2 text-sm md:text-base">Aplikasi Semakan & Pengurusan Bayaran</p>
-        </div>
-        
-        <!-- Tab Navigasi -->
-        <div class="flex justify-center bg-sky-900 border-t border-sky-700">
-            <button onclick="switchView('parent')" id="tab-parent" class="px-6 py-4 font-semibold text-white bg-sky-700 hover:bg-sky-600 transition-colors border-b-4 border-amber-400">
-                <i class="fa-solid fa-users mr-2"></i> Ibu Bapa
-            </button>
-            <button onclick="switchView('admin')" id="tab-admin" class="px-6 py-4 font-semibold text-sky-200 hover:bg-sky-800 hover:text-white transition-colors border-b-4 border-transparent">
-                <i class="fa-solid fa-lock mr-2"></i> Pentadbir
-            </button>
+    <!-- HEADER -->
+    <header class="bg-sky-800 text-white shadow-md relative z-10 no-print">
+        <div class="max-w-5xl mx-auto px-4 py-6">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
+                        <i class="fa-solid fa-building-user text-2xl text-sky-700"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl md:text-2xl font-bold tracking-tight">Asrama K-SpeEdS</h1>
+                        <p class="text-sky-200 text-sm font-medium">Sistem Semakan & Bayaran PIBG</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
-    <main class="max-w-5xl mx-auto px-4 py-8 no-print min-h-[70vh]">
-        
-        <!-- ==================== PAPARAN IBU BAPA ==================== -->
-        <div id="view-parent" class="space-y-8 fade-in block">
-            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
-                <h2 class="text-xl font-bold text-slate-800 mb-2">Semakan Bayaran Anak</h2>
-                <p class="text-slate-500 mb-6 text-sm">Sila masukkan nama penuh atau separuh nama anak anda untuk membuat semakan yuran.</p>
-                
-                <div class="relative max-w-xl mx-auto mb-8">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
-                    </div>
-                    <input type="text" id="search-input" onkeyup="carianIbuBapa()" placeholder="Contoh: Ahmad" class="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-all shadow-sm text-lg outline-none">
-                </div>
+    <!-- TABS NAVIGASI -->
+    <div class="bg-sky-900 shadow-inner no-print sticky top-0 z-20">
+        <div class="max-w-5xl mx-auto px-4 flex" id="tab-parent-container">
+            <button onclick="window.switchView('parent')" id="tab-parent" class="flex-1 md:flex-none px-6 py-4 text-center font-semibold text-sm transition-all border-b-4 text-white border-amber-400 bg-sky-700">
+                <i class="fa-solid fa-magnifying-glass mr-2"></i> Ibu Bapa
+            </button>
+            <button onclick="window.switchView('admin')" id="tab-admin" class="flex-1 md:flex-none px-6 py-4 text-center font-semibold text-sm transition-all border-b-4 text-sky-200 border-transparent bg-transparent hover:bg-sky-800">
+                <i class="fa-solid fa-lock mr-2"></i> Pentadbir
+            </button>
+        </div>
+    </div>
 
-                <div id="search-results" class="space-y-4 text-left max-w-3xl mx-auto">
-                    <!-- Hasil carian akan dipaparkan di sini -->
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 w-full max-w-5xl mx-auto px-4 py-8 no-print">
+
+        <!-- ==================== PAPARAN IBU BAPA ==================== -->
+        <div id="view-parent" class="space-y-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 md:p-8">
+                <div class="max-w-2xl mx-auto text-center">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Semakan Bayaran Anak</h2>
+                    <p class="text-slate-500 mb-8">Sila masukkan nama anak anda untuk menyemak status bayaran PIBG asrama terkini.</p>
+                    
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-user-graduate text-slate-400"></i>
+                        </div>
+                        <input type="text" id="search-input" onkeyup="window.carianIbuBapa()" 
+                            class="block w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-300 rounded-xl text-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition-shadow" 
+                            placeholder="Contoh: Ahmad bin Abu...">
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-sky-50 p-6 md:p-8 rounded-2xl border border-sky-100 text-center">
+            <div id="search-results" class="space-y-4 max-w-3xl mx-auto">
+                <!-- Hasil carian akan keluar di sini -->
+            </div>
+
+            <!-- Hubungi Kami -->
+            <div class="mt-12 bg-sky-50 p-6 rounded-xl border border-sky-100 text-center max-w-3xl mx-auto">
                 <h3 class="text-lg font-bold text-sky-900 mb-4">Sebarang masalah, sila hubungi kami:</h3>
                 <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <a href="https://wa.link/rl4oi6" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl transition shadow-sm w-full sm:w-auto justify-center font-medium">
+                    <a href="https://wa.link/rl4oi6" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg transition shadow-sm w-full sm:w-auto justify-center font-medium">
                         <i class="fa-brands fa-whatsapp text-xl"></i> Cikgu Am
                     </a>
-                    <a href="https://wa.link/4t6vds" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl transition shadow-sm w-full sm:w-auto justify-center font-medium">
+                    <a href="https://wa.link/4t6vds" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg transition shadow-sm w-full sm:w-auto justify-center font-medium">
                         <i class="fa-brands fa-whatsapp text-xl"></i> Cikgu Nazirah
                     </a>
-                    <a href="https://wa.link/5j0fq8" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-3 rounded-xl transition shadow-sm w-full sm:w-auto justify-center font-medium">
+                    <a href="https://wa.link/5j0fq8" target="_blank" class="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2.5 rounded-lg transition shadow-sm w-full sm:w-auto justify-center font-medium">
                         <i class="fa-brands fa-whatsapp text-xl"></i> Cikgu Hawa
                     </a>
                 </div>
@@ -77,186 +98,239 @@
         </div>
 
         <!-- ==================== PAPARAN PENTADBIR ==================== -->
-        <div id="view-admin" class="space-y-6 hidden">
+        <div id="view-admin" class="hidden space-y-6">
             
-            <!-- Kad Statistik -->
+            <!-- Statistik -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-sky-500">
-                    <p class="text-sm font-semibold text-slate-500 mb-1">Jumlah Pelajar</p>
-                    <p id="stat-pelajar" class="text-2xl font-bold text-slate-800">0</p>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-users"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">Jumlah Rekod</p>
+                        <p class="text-2xl font-bold text-slate-800" id="stat-pelajar">0</p>
+                    </div>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-emerald-500">
-                    <p class="text-sm font-semibold text-slate-500 mb-1">Jumlah Kutipan Berjaya</p>
-                    <p id="stat-kutipan" class="text-2xl font-bold text-emerald-600">RM 0.00</p>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">Kutipan Semasa</p>
+                        <p class="text-2xl font-bold text-slate-800" id="stat-kutipan">RM 0.00</p>
+                    </div>
                 </div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 border-l-4 border-l-rose-500">
-                    <p class="text-sm font-semibold text-slate-500 mb-1">Jumlah Tunggakan</p>
-                    <p id="stat-tunggakan" class="text-2xl font-bold text-rose-600">RM 0.00</p>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4">
+                    <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center text-xl"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                    <div>
+                        <p class="text-sm text-slate-500 font-medium">Jumlah Tunggakan</p>
+                        <p class="text-2xl font-bold text-slate-800" id="stat-tunggakan">RM 0.00</p>
+                    </div>
                 </div>
             </div>
 
-            <!-- Borang Tambah / Kemas Kini -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h3 class="text-lg font-bold text-slate-800 mb-4 border-b pb-3 border-slate-100">Tambah / Kemas Kini Rekod</h3>
-                <input type="hidden" id="form-id">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Penuh Murid</label>
-                        <input type="text" id="form-nama" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none" placeholder="Contoh: Muhammad Ali Bin Abu">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Yuran PIBG (RM 250)</label>
-                        <input type="number" id="form-pibg" min="0" value="0" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Baju T-Shirt (RM 30)</label>
-                        <input type="number" id="form-tshirt" min="0" value="0" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Lawatan (RM 100)</label>
-                        <input type="number" id="form-lawatan" min="0" value="0" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 outline-none">
-                    </div>
+            <!-- Borang Tambah/Edit -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                    <h3 class="font-bold text-slate-800"><i class="fa-solid fa-pen-to-square mr-2"></i> Kemas Kini Rekod Bayaran</h3>
                 </div>
-                <div class="flex gap-3">
-                    <button onclick="simpanRekod()" class="px-6 py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg transition-colors shadow-sm"><i class="fa-solid fa-floppy-disk mr-2"></i>Simpan Rekod</button>
-                    <button onclick="kosongkanBorang()" class="px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors">Batal / Kosongkan</button>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div class="lg:col-span-4">
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Penuh Murid</label>
+                            <input type="text" id="form-nama" class="w-full p-2.5 border border-slate-300 rounded-lg uppercase focus:ring-2 focus:ring-sky-500 focus:border-sky-500" placeholder="Ahmad bin Abu">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">PIBG (RM 250)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2.5 text-slate-500 font-medium">RM</span>
+                                <input type="number" id="form-pibg" class="w-full pl-10 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500" value="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">T-Shirt (RM 30)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2.5 text-slate-500 font-medium">RM</span>
+                                <input type="number" id="form-tshirt" class="w-full pl-10 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500" value="0">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Lawatan (RM 100)</label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-2.5 text-slate-500 font-medium">RM</span>
+                                <input type="number" id="form-lawatan" class="w-full pl-10 p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-sky-500" value="0">
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <input type="hidden" id="form-id">
+                            <button onclick="window.simpanRekod()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-semibold py-2.5 px-4 rounded-lg transition-colors">
+                                Simpan
+                            </button>
+                            <button onclick="window.kosongkanBorang()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold py-2.5 px-4 rounded-lg transition-colors">
+                                <i class="fa-solid fa-eraser"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Jadual Data Pentadbir -->
+            <!-- Jadual Data -->
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-50 text-slate-600 text-sm border-b border-slate-200">
+                            <tr class="bg-slate-100 text-slate-600 text-sm uppercase tracking-wider">
                                 <th class="p-4 font-semibold">Nama Murid</th>
-                                <th class="p-4 font-semibold text-center">Pecahan Bayaran</th>
-                                <th class="p-4 font-semibold text-center">Jumlah Dibayar</th>
-                                <th class="p-4 font-semibold text-center">Baki</th>
+                                <th class="p-4 font-semibold text-center">Pecahan (RM)</th>
+                                <th class="p-4 font-semibold text-center">Dibayar</th>
+                                <th class="p-4 font-semibold text-center">Status</th>
                                 <th class="p-4 font-semibold text-center">Tindakan</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-table-body" class="divide-y divide-slate-100">
-                            <!-- Data dijana melalui JS -->
+                        <tbody id="admin-table-body" class="divide-y divide-slate-200">
+                            <!-- Rekod akan dimasukkan di sini -->
                         </tbody>
                     </table>
-                </div>
-                <div id="admin-empty-state" class="p-8 text-center text-slate-500 hidden">
-                    <i class="fa-solid fa-folder-open text-4xl mb-3 text-slate-300"></i>
-                    <p>Tiada rekod ditemui. Sila tambah rekod baru.</p>
+                    <div id="admin-empty-state" class="hidden p-8 text-center text-slate-500">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-slate-300"></i>
+                        <p>Tiada rekod pelajar dijumpai.</p>
+                    </div>
                 </div>
             </div>
+
         </div>
 
     </main>
 
     <!-- MODAL KATA LALUAN -->
-    <div id="modal-password" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4 transition-opacity">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center transform transition-all">
-            <div class="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-lock text-2xl"></i>
+    <div id="modal-password" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center hidden">
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl max-w-sm w-full mx-4 transform transition-all">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800">Akses Pentadbir</h3>
+                <p class="text-sm text-slate-500 mt-1">Sila masukkan kata laluan untuk meneruskan.</p>
             </div>
-            <h3 class="text-xl font-bold text-slate-800 mb-2">Log Masuk Pentadbir</h3>
-            <p class="text-slate-500 mb-4 text-sm">Sila masukkan kata laluan untuk mengakses data.</p>
-            <input type="password" id="input-password" class="w-full border border-slate-300 rounded-xl p-3 mb-4 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-200 text-center text-lg tracking-widest" placeholder="••••••••">
-            <p id="error-password" class="text-rose-500 text-sm mb-4 hidden font-medium"><i class="fa-solid fa-circle-exclamation mr-1"></i> Kata laluan salah. Sila cuba lagi.</p>
+            <input type="password" id="input-password" class="w-full p-3 border border-slate-300 rounded-xl text-center text-lg tracking-widest focus:ring-2 focus:ring-sky-500 focus:border-sky-500 mb-2" placeholder="••••••••">
+            <p id="error-password" class="text-rose-500 text-sm text-center mb-6 hidden"><i class="fa-solid fa-circle-exclamation"></i> Kata laluan salah!</p>
             <div class="flex gap-3">
-                <button onclick="batalLogMasuk()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-bold transition">Batal</button>
-                <button onclick="sahkanKatalaluan()" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white py-3 rounded-xl font-bold transition shadow-sm">Sahkan</button>
+                <button onclick="window.batalLogMasuk()" class="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition">Batal</button>
+                <button onclick="window.sahkanKatalaluan()" class="flex-1 px-4 py-3 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-xl transition shadow-md shadow-sky-600/20">Sahkan</button>
             </div>
         </div>
     </div>
 
-    <!-- NOTIFIKASI TOAST -->
-    <div id="toast-notif" class="fixed bottom-5 right-5 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 font-semibold pointer-events-none">
-        <i class="fa-solid fa-circle-check text-emerald-400 text-xl"></i>
-        <span id="toast-msg">Berjaya</span>
-    </div>
-
-    <!-- FORMAT CETAKAN RESIT (Hanya nampak bila Print) -->
-    <div id="print-area">
-        <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
-            <h1 style="font-size: 24px; font-weight: bold; margin: 0; text-transform: uppercase;">Resit Bayaran Rasmi</h1>
-            <h2 style="font-size: 18px; margin: 5px 0 0 0;">Asrama K-SpeEdS</h2>
-        </div>
-        
-        <table style="width: 100%; margin-bottom: 30px;">
-            <tr>
-                <td style="padding: 5px 0;"><strong>Nama Murid:</strong> <span id="resit-nama" style="text-transform: uppercase;">-</span></td>
-                <td style="padding: 5px 0; text-align: right;"><strong>Tarikh Cetakan:</strong> <span id="resit-tarikh">-</span></td>
-            </tr>
-        </table>
-
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
-            <thead>
-                <tr style="background-color: #f3f4f6;">
-                    <th style="border: 1px solid #000; padding: 12px; text-align: left;">Perkara</th>
-                    <th style="border: 1px solid #000; padding: 12px; text-align: center;">Yuran Ditetapkan (RM)</th>
-                    <th style="border: 1px solid #000; padding: 12px; text-align: center;">Jumlah Dibayar (RM)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td style="border: 1px solid #000; padding: 12px;">Bayaran PIBG Asrama</td>
-                    <td style="border: 1px solid #000; padding: 12px; text-align: center;">250.00</td>
-                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-pibg">0.00</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #000; padding: 12px;">Bayaran T-Shirt</td>
-                    <td style="border: 1px solid #000; padding: 12px; text-align: center;">30.00</td>
-                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-tshirt">0.00</td>
-                </tr>
-                <tr>
-                    <td style="border: 1px solid #000; padding: 12px;">Bayaran Lawatan</td>
-                    <td style="border: 1px solid #000; padding: 12px; text-align: center;">100.00</td>
-                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-lawatan">0.00</td>
-                </tr>
-                <tr style="font-weight: bold; background-color: #f3f4f6;">
-                    <td colspan="2" style="border: 1px solid #000; padding: 12px; text-align: right;">JUMLAH KESELURUHAN DIBAYAR:</td>
-                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-total">0.00</td>
-                </tr>
-                <tr style="font-weight: bold;">
-                    <td colspan="2" style="border: 1px solid #000; padding: 12px; text-align: right;">BAKI TUNGGAKAN:</td>
-                    <td style="border: 1px solid #000; padding: 12px; text-align: center;" id="resit-baki">0.00</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div style="text-align: center; margin-top: 80px; color: #555; font-size: 14px;">
-            <p>Cetakan berkomputer. Tiada tandatangan diperlukan.</p>
-            <p style="font-weight: bold; margin-top: 10px;">Aplikasi ini dihasilkan oleh Cikgu Am.</p>
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast-notif" class="fixed bottom-6 right-6 z-50 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+        <div class="bg-slate-800 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3">
+            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toast-msg" class="font-medium text-sm">Berjaya</span>
         </div>
     </div>
 
-    <!-- Footer Laman Utama -->
-    <footer class="bg-slate-800 text-slate-400 py-6 text-center text-sm no-print border-t border-slate-700 mt-auto">
+    <!-- FOOTER -->
+    <footer class="bg-slate-800 text-slate-400 py-6 text-center text-sm border-t border-slate-700 mt-auto no-print">
         <p>Aplikasi ini dihasilkan oleh Cikgu Am.</p>
     </footer>
 
-    <script>
+    <!-- JAVASCRIPT SYSTEM -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
         // Konfigurasi Asas
         const YURAN = { pibg: 250, tshirt: 30, lawatan: 100, total: 380 };
         const ADMIN_PASSWORD = "asrama2026";
         let isAdmloggedIn = false;
         
-        // Pangkalan Data (LocalStorage)
-        let db = JSON.parse(localStorage.getItem('asrama_kseeds_data')) || [];
+        // Pangkalan Data Array
+        let db = [];
+        
+        // Firebase Setup
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        
+        let firestoreDb = null;
+        let currentUser = null;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kseeds-asrama-app';
 
-        // ================= FUNGSI KAWALAN PAPARAN (TABS) =================
-        function switchView(viewName) {
+        // Initialize sistem
+        window.onload = function() {
+            // Pastikan elemen wujud sebelum init
+            if (Object.keys(firebaseConfig).length > 0) {
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                firestoreDb = getFirestore(app);
+
+                const initAuth = async () => {
+                    try {
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    } catch (error) {
+                        console.error("Auth Error", error);
+                    }
+                };
+                initAuth();
+
+                onAuthStateChanged(auth, (user) => {
+                    currentUser = user;
+                    if (user) setupFirestoreListener();
+                });
+            } else {
+                // Fallback ke local storage jika Firebase tiada (Offline/Biasa)
+                db = JSON.parse(localStorage.getItem('asrama_kseeds_data')) || [];
+                window.switchView('parent'); // Mula di paparan ibu bapa
+            }
+
+            // Bind Event Listener pada Input Password
+            const passInput = document.getElementById('input-password');
+            if (passInput) {
+                passInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') window.sahkanKatalaluan();
+                });
+            }
+        };
+
+        function setupFirestoreListener() {
+            if (!currentUser) return;
+            const colRef = collection(firestoreDb, 'artifacts', appId, 'public', 'data', 'pelajar');
+            onSnapshot(colRef, (snapshot) => {
+                db = [];
+                snapshot.forEach((doc) => {
+                    db.push({ id: doc.id, ...doc.data() });
+                });
+                
+                // Segarkan UI secara automatik jika data berubah
+                const viewAdmin = document.getElementById('view-admin');
+                if (viewAdmin && !viewAdmin.classList.contains('hidden')) {
+                    renderAdminTable();
+                } else {
+                    window.carianIbuBapa();
+                }
+            }, (error) => {
+                console.error("Firestore Error", error);
+            });
+            window.switchView('parent');
+        }
+
+        window.switchView = function(viewName) {
+            const viewAdmin = document.getElementById('view-admin');
+            const viewParent = document.getElementById('view-parent');
+            const modalPassword = document.getElementById('modal-password');
+            const tabParent = document.getElementById('tab-parent');
+            const tabAdmin = document.getElementById('tab-admin');
+
+            if (!viewAdmin || !viewParent || !modalPassword || !tabParent || !tabAdmin) return;
+
             if (viewName === 'admin' && !isAdmloggedIn) {
                 // Tunjuk modal kata laluan
-                document.getElementById('modal-password').classList.remove('hidden');
+                modalPassword.classList.remove('hidden');
                 document.getElementById('input-password').value = '';
                 document.getElementById('error-password').classList.add('hidden');
                 setTimeout(() => document.getElementById('input-password').focus(), 100);
                 return;
             }
 
-            // Tukar Butang Tab
-            const tabParent = document.getElementById('tab-parent');
-            const tabAdmin = document.getElementById('tab-admin');
-            
             if (viewName === 'parent') {
                 tabParent.classList.replace('text-sky-200', 'text-white');
                 tabParent.classList.replace('border-transparent', 'border-amber-400');
@@ -266,8 +340,8 @@
                 tabAdmin.classList.replace('border-amber-400', 'border-transparent');
                 tabAdmin.classList.replace('bg-sky-700', 'bg-transparent');
                 
-                document.getElementById('view-parent').classList.remove('hidden');
-                document.getElementById('view-admin').classList.add('hidden');
+                viewParent.classList.remove('hidden');
+                viewAdmin.classList.add('hidden');
             } else {
                 tabAdmin.classList.replace('text-sky-200', 'text-white');
                 tabAdmin.classList.replace('border-transparent', 'border-amber-400');
@@ -277,37 +351,30 @@
                 tabParent.classList.replace('border-amber-400', 'border-transparent');
                 tabParent.classList.replace('bg-sky-700', 'bg-transparent');
                 
-                document.getElementById('view-admin').classList.remove('hidden');
-                document.getElementById('view-parent').classList.add('hidden');
+                viewAdmin.classList.remove('hidden');
+                viewParent.classList.add('hidden');
                 
-                renderAdminTable(); // Segarkan data admin bila dibuka
+                renderAdminTable();
             }
-        }
+        };
 
-        // ================= FUNGSI MODAL KESELAMATAN =================
-        function batalLogMasuk() {
+        window.batalLogMasuk = function() {
             document.getElementById('modal-password').classList.add('hidden');
-        }
+        };
 
-        function sahkanKatalaluan() {
+        window.sahkanKatalaluan = function() {
             const val = document.getElementById('input-password').value;
             if (val === ADMIN_PASSWORD) {
                 isAdmloggedIn = true;
                 document.getElementById('modal-password').classList.add('hidden');
                 showToast("Log masuk berjaya!");
-                switchView('admin');
+                window.switchView('admin');
             } else {
                 document.getElementById('error-password').classList.remove('hidden');
             }
-        }
+        };
 
-        // Benarkan tekan "Enter" di dalam input kata laluan
-        document.getElementById('input-password').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sahkanKatalaluan();
-        });
-
-        // ================= FUNGSI PENTADBIR =================
-        function simpanRekod() {
+        window.simpanRekod = async function() {
             const id = document.getElementById('form-id').value;
             const nama = document.getElementById('form-nama').value.trim().toUpperCase();
             const pibg = parseFloat(document.getElementById('form-pibg').value) || 0;
@@ -318,33 +385,41 @@
                 alert("Sila masukkan nama murid."); return;
             }
 
-            if (id) {
-                // Kemas kini rekod sedia ada
-                const index = db.findIndex(r => r.id == id);
-                if (index > -1) {
-                    db[index] = { id: parseFloat(id), nama, pibg, tshirt, lawatan };
+            const docId = id ? id.toString() : Date.now().toString();
+            const rekod = { nama, pibg, tshirt, lawatan };
+
+            if (firestoreDb && currentUser) {
+                try {
+                    const docRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'pelajar', docId);
+                    await setDoc(docRef, rekod);
+                    showToast("Maklumat berjaya disimpan ke Cloud!");
+                } catch(e) {
+                    showToast("Ralat menyimpan data.");
                 }
             } else {
-                // Tambah rekod baru
-                const newId = Date.now();
-                db.push({ id: newId, nama, pibg, tshirt, lawatan });
+                // Fallback Local
+                if(id) {
+                    const idx = db.findIndex(r => r.id == id);
+                    if(idx > -1) db[idx] = {id: docId, ...rekod};
+                } else {
+                    db.push({id: docId, ...rekod});
+                }
+                localStorage.setItem('asrama_kseeds_data', JSON.stringify(db));
+                renderAdminTable();
+                showToast("Maklumat disimpan (Local).");
             }
+            window.kosongkanBorang();
+        };
 
-            localStorage.setItem('asrama_kseeds_data', JSON.stringify(db));
-            kosongkanBorang();
-            renderAdminTable();
-            showToast("Maklumat berjaya disimpan!");
-        }
-
-        function kosongkanBorang() {
+        window.kosongkanBorang = function() {
             document.getElementById('form-id').value = '';
             document.getElementById('form-nama').value = '';
             document.getElementById('form-pibg').value = '0';
             document.getElementById('form-tshirt').value = '0';
             document.getElementById('form-lawatan').value = '0';
-        }
+        };
 
-        function editRekod(id) {
+        window.editRekod = function(id) {
             const rekod = db.find(r => r.id == id);
             if (rekod) {
                 document.getElementById('form-id').value = rekod.id;
@@ -354,23 +429,34 @@
                 document.getElementById('form-lawatan').value = rekod.lawatan;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
-        }
+        };
 
-        function padamRekod(id) {
-            // Nota: Sengaja gunakan pengesahan custom HTML/JS tapi memandangkan arahan larang confirm(), kita hapus terus atau abaikan.
-            // Memandangkan sistem ini sensitif, baik kita elakkan delete yang tidak sengaja.
-            // Saya tambah delete terus dengan toast.
-            db = db.filter(r => r.id != id);
-            localStorage.setItem('asrama_kseeds_data', JSON.stringify(db));
-            renderAdminTable();
-            showToast("Rekod dipadam.");
-        }
+        window.padamRekod = async function(id) {
+            const confirmDelete = confirm("Adakah anda pasti mahu memadam rekod ini?");
+            if (!confirmDelete) return;
+
+            if (firestoreDb && currentUser) {
+                try {
+                    const docRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'pelajar', id.toString());
+                    await deleteDoc(docRef);
+                    showToast("Rekod dipadam dari Cloud.");
+                } catch(e) {
+                    showToast("Ralat memadam data.");
+                }
+            } else {
+                db = db.filter(r => r.id != id);
+                localStorage.setItem('asrama_kseeds_data', JSON.stringify(db));
+                renderAdminTable();
+                showToast("Rekod dipadam (Local).");
+            }
+        };
 
         function renderAdminTable() {
             const tbody = document.getElementById('admin-table-body');
             const emptyState = document.getElementById('admin-empty-state');
+            if(!tbody || !emptyState) return;
+
             tbody.innerHTML = '';
-            
             let statPelajar = 0;
             let statKutipan = 0;
             let statTunggakan = 0;
@@ -382,20 +468,17 @@
                 emptyState.classList.add('hidden');
                 document.querySelector('table').classList.remove('hidden');
 
-                // Susun ikut nama (Alphabetical)
                 const sortedDb = [...db].sort((a,b) => a.nama.localeCompare(b.nama));
 
                 sortedDb.forEach(rekod => {
                     statPelajar++;
-                    // Math.round mengatasi masalah ralat titik perpuluhan seperti 379.99
                     const dibayar = Math.round((rekod.pibg + rekod.tshirt + rekod.lawatan) * 100) / 100;
                     let baki = Math.round((YURAN.total - dibayar) * 100) / 100;
-                    if(baki < 0) baki = 0; // Elak nilai negatif jika terbayar lebih
+                    if(baki < 0) baki = 0;
 
                     statKutipan += dibayar;
                     statTunggakan += baki;
 
-                    // Lencana status baki
                     const bakiBadge = baki > 0 
                         ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-700 border border-rose-200">RM ${baki.toFixed(2)} Tunggakan</span>`
                         : `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-check"></i> Selesai</span>`;
@@ -412,25 +495,26 @@
                         <td class="p-4 text-center font-bold text-sky-600">RM ${dibayar.toFixed(2)}</td>
                         <td class="p-4 text-center">${bakiBadge}</td>
                         <td class="p-4 text-center space-x-2">
-                            <button onclick="editRekod(${rekod.id})" class="text-sky-500 hover:text-sky-700 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="cetakResit(${rekod.id})" class="text-emerald-500 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-print"></i></button>
-                            <button onclick="padamRekod(${rekod.id})" class="text-rose-400 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition"><i class="fa-solid fa-trash-can"></i></button>
+                            <button onclick="window.editRekod('${rekod.id}')" class="text-sky-500 hover:text-sky-700 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="window.cetakResit('${rekod.id}')" class="text-emerald-500 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg transition" title="Cetak Resit PDF"><i class="fa-solid fa-print"></i></button>
+                            <button onclick="window.padamRekod('${rekod.id}')" class="text-rose-400 hover:text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg transition" title="Padam"><i class="fa-solid fa-trash-can"></i></button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
 
-            // Update Dashboard Stats
             document.getElementById('stat-pelajar').innerText = statPelajar;
             document.getElementById('stat-kutipan').innerText = `RM ${statKutipan.toFixed(2)}`;
             document.getElementById('stat-tunggakan').innerText = `RM ${statTunggakan.toFixed(2)}`;
         }
 
-        // ================= FUNGSI IBU BAPA (CARIAN) =================
-        function carianIbuBapa() {
-            const katanama = document.getElementById('search-input').value.trim().toUpperCase();
+        window.carianIbuBapa = function() {
+            const inputEl = document.getElementById('search-input');
             const resultDiv = document.getElementById('search-results');
+            if(!inputEl || !resultDiv) return;
+            
+            const katanama = inputEl.value.trim().toUpperCase();
             resultDiv.innerHTML = '';
 
             if (katanama.length < 3) {
@@ -453,25 +537,22 @@
                 if(baki < 0) baki = 0;
                 
                 const peratus = Math.min((dibayar / YURAN.total) * 100, 100);
+                const statusColor = baki === 0 ? "bg-emerald-500" : "bg-rose-500";
                 
                 const card = document.createElement('div');
                 card.className = "bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden";
-                
-                // Color bar tepi (hijau = settle, merah = belum)
-                const statusColor = baki === 0 ? "bg-emerald-500" : "bg-rose-500";
-                
                 card.innerHTML = `
                     <div class="absolute left-0 top-0 bottom-0 w-1.5 ${statusColor}"></div>
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pl-3">
                         <div class="flex-1">
                             <h3 class="font-bold text-lg text-slate-800 uppercase">${rekod.nama}</h3>
-                            <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-slate-600">
+                            <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm text-slate-600">
                                 <div class="bg-slate-50 p-2 rounded"><strong>PIBG:</strong> RM ${rekod.pibg.toFixed(2)} / ${YURAN.pibg}</div>
                                 <div class="bg-slate-50 p-2 rounded"><strong>Baju:</strong> RM ${rekod.tshirt.toFixed(2)} / ${YURAN.tshirt}</div>
                                 <div class="bg-slate-50 p-2 rounded"><strong>Lawatan:</strong> RM ${rekod.lawatan.toFixed(2)} / ${YURAN.lawatan}</div>
                             </div>
                         </div>
-                        <div class="text-right w-full md:w-auto bg-slate-50 md:bg-transparent p-3 rounded-lg">
+                        <div class="text-right w-full md:w-auto bg-slate-50 md:bg-transparent p-3 rounded-lg flex flex-col items-end">
                             <p class="text-xs text-slate-500 font-semibold mb-1">Status Bayaran</p>
                             <p class="text-2xl font-black ${baki === 0 ? 'text-emerald-500' : 'text-slate-700'}">
                                 RM ${dibayar.toFixed(2)}
@@ -481,17 +562,15 @@
                             </p>
                         </div>
                     </div>
-                    <!-- Progress Bar -->
                     <div class="mt-4 w-full bg-slate-100 rounded-full h-2 pl-3">
                         <div class="${baki === 0 ? 'bg-emerald-500' : 'bg-sky-500'} h-2 rounded-full transition-all duration-1000" style="width: ${peratus}%"></div>
                     </div>
                 `;
                 resultDiv.appendChild(card);
             });
-        }
+        };
 
-        // ================= FUNGSI CETAK RESIT =================
-        function cetakResit(id) {
+        window.cetakResit = function(id) {
             const rekod = db.find(r => r.id == id);
             if (!rekod) return;
 
@@ -503,31 +582,71 @@
                 day: '2-digit', month: 'long', year: 'numeric'
             });
 
-            document.getElementById('resit-nama').innerText = rekod.nama;
-            document.getElementById('resit-tarikh').innerText = tarikh;
-            document.getElementById('resit-pibg').innerText = rekod.pibg.toFixed(2);
-            document.getElementById('resit-tshirt').innerText = rekod.tshirt.toFixed(2);
-            document.getElementById('resit-lawatan').innerText = rekod.lawatan.toFixed(2);
-            document.getElementById('resit-total').innerText = dibayar.toFixed(2);
-            document.getElementById('resit-baki').innerText = baki.toFixed(2);
-
             showToast("Menjana PDF... Sila tunggu.");
 
-            // Sediakan elemen sementara (hidden) untuk dimuat turun sebagai PDF
+            // Hasilkan HTML murni khas untuk PDF dengan saiz tetap 800px untuk elak lari format
+            const htmlContent = `
+                <div style="font-family: Arial, sans-serif; padding: 40px; color: #000; background: #fff; width: 800px; max-width: 800px;">
+                    <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
+                        <h1 style="font-size: 24px; font-weight: bold; margin: 0; text-transform: uppercase;">Resit Bayaran Rasmi</h1>
+                        <h2 style="font-size: 18px; margin: 5px 0 0 0;">Asrama K-SpeEdS</h2>
+                    </div>
+                    <table style="width: 100%; margin-bottom: 30px; font-size: 15px;">
+                        <tr>
+                            <td style="padding: 5px 0;"><strong>Nama Murid:</strong> <span style="text-transform: uppercase;">${rekod.nama}</span></td>
+                            <td style="padding: 5px 0; text-align: right;"><strong>Tarikh Cetakan:</strong> ${tarikh}</td>
+                        </tr>
+                    </table>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 15px;">
+                        <thead>
+                            <tr style="background-color: #f3f4f6;">
+                                <th style="border: 1px solid #000; padding: 12px; text-align: left;">Perkara</th>
+                                <th style="border: 1px solid #000; padding: 12px; text-align: center;">Yuran (RM)</th>
+                                <th style="border: 1px solid #000; padding: 12px; text-align: center;">Dibayar (RM)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 12px;">Bayaran PIBG Asrama</td>
+                                <td style="border: 1px solid #000; padding: 12px; text-align: center;">250.00</td>
+                                <td style="border: 1px solid #000; padding: 12px; text-align: center;">${rekod.pibg.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 12px;">Bayaran T-Shirt</td>
+                                <td style="border: 1px solid #000; padding: 12px; text-align: center;">30.00</td>
+                                <td style="border: 1px solid #000; padding: 12px; text-align: center;">${rekod.tshirt.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td style="border: 1px solid #000; padding: 12px;">Bayaran Lawatan</td>
+                                <td style="border: 1px solid #000; padding: 12px; text-align: center;">100.00</td>
+                                <td style="border: 1px solid #000; padding: 12px; text-align: center;">${rekod.lawatan.toFixed(2)}</td>
+                            </tr>
+                            <tr style="font-weight: bold; background-color: #f3f4f6;">
+                                <td colspan="2" style="border: 1px solid #000; padding: 12px; text-align: right;">JUMLAH KESELURUHAN DIBAYAR:</td>
+                                <td style="border: 1px solid #000; padding: 12px; text-align: center;">${dibayar.toFixed(2)}</td>
+                            </tr>
+                            <tr style="font-weight: bold;">
+                                <td colspan="2" style="border: 1px solid #000; padding: 12px; text-align: right;">BAKI TUNGGAKAN:</td>
+                                <td style="border: 1px solid #000; padding: 12px; text-align: center;">${baki.toFixed(2)}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="text-align: center; margin-top: 80px; color: #555; font-size: 13px;">
+                        <p>Cetakan berkomputer. Tiada tandatangan diperlukan.</p>
+                        <p style="font-weight: bold; margin-top: 10px;">Aplikasi ini dihasilkan oleh Cikgu Am.</p>
+                    </div>
+                </div>
+            `;
+
+            // Proses rendering PDF
             const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = document.getElementById('print-area').innerHTML;
-            
-            // Tetapkan gaya CSS supaya resit sentiasa kemas bersaiz A4
-            tempDiv.style.width = '800px';
-            tempDiv.style.padding = '40px';
-            tempDiv.style.backgroundColor = '#ffffff';
-            tempDiv.style.color = '#000000';
+            tempDiv.innerHTML = htmlContent;
+            // Letakkan element di luar pandangan supaya ia wujud dalam DOM untuk dirender
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';
-            tempDiv.style.top = '-9999px';
+            tempDiv.style.top = '0';
             document.body.appendChild(tempDiv);
-
-            // Konfigurasi tetapan PDF
+            
             const opt = {
                 margin:       0.5,
                 filename:     `Resit_Asrama_${rekod.nama.replace(/\s+/g, '_')}.pdf`,
@@ -536,26 +655,25 @@
                 jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
             };
 
-            // Jana PDF menggunakan library html2pdf
-            html2pdf().set(opt).from(tempDiv).save().then(() => {
+            window.html2pdf().set(opt).from(tempDiv).save().then(() => {
+                document.body.removeChild(tempDiv); // Buang elemen selepas siap muat turun
+                showToast("Resit berjaya dimuat turun!");
+            }).catch(err => {
                 document.body.removeChild(tempDiv);
-                showToast("Resit PDF berjaya dimuat turun!");
+                console.error("PDF Error: ", err);
+                showToast("Ralat menjana PDF!");
             });
-        }
+        };
 
-        // ================= FUNGSI UTILITI =================
         function showToast(msg) {
             const toast = document.getElementById('toast-notif');
+            if(!toast) return;
             document.getElementById('toast-msg').innerText = msg;
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 3000);
         }
-        
-        // Mula-mula load app (Buka tab Ibu Bapa)
-        switchView('parent');
-
     </script>
 </body>
 </html>
