@@ -39,6 +39,9 @@
                         <p class="text-sky-200 text-sm font-medium">Sistem Semakan & Bayaran PIBG</p>
                     </div>
                 </div>
+                <button onclick="window.muatTurunData()" class="bg-sky-700 hover:bg-sky-600 px-4 py-2 rounded-lg text-sm font-medium border border-sky-600 transition">
+                    <i class="fa-solid fa-arrows-rotate mr-1"></i> Segar Semula Data
+                </button>
             </div>
         </div>
     </header>
@@ -189,7 +192,7 @@
                     </table>
                     <div id="admin-empty-state" class="hidden p-8 text-center text-slate-500">
                         <i class="fa-solid fa-folder-open text-4xl mb-3 text-slate-300"></i>
-                        <p>Tiada rekod pelajar dijumpai.</p>
+                        <p>Tiada rekod pelajar dijumpai atau sedang memuat turun dari pangkalan data.</p>
                     </div>
                 </div>
             </div>
@@ -220,7 +223,7 @@
     <!-- TOAST NOTIFICATION -->
     <div id="toast-notif" class="fixed bottom-6 right-6 z-50 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
         <div class="bg-slate-800 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3">
-            <i class="fa-solid fa-circle-check text-emerald-400"></i>
+            <i class="fa-solid fa-circle-check text-emerald-400" id="toast-icon"></i>
             <span id="toast-msg" class="font-medium text-sm">Berjaya</span>
         </div>
     </div>
@@ -230,89 +233,67 @@
         <p>Aplikasi ini dihasilkan oleh Cikgu Am.</p>
     </footer>
 
-    <!-- JAVASCRIPT SYSTEM -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Konfigurasi Asas
+    <!-- JAVASCRIPT SYSTEM (GOOGLE SHEETS FETCH) -->
+    <script>
+        // ========================================================
+        // AMAT PENTING: CIKGU PERLU PASTE URL GOOGLE APPS SCRIPT DI SINI!
+        // ========================================================
+        const GAS_URL = ""; 
+        
         const YURAN = { pibg: 250, tshirt: 30, lawatan: 100, total: 380 };
         const ADMIN_PASSWORD = "asrama2026";
         let isAdmloggedIn = false;
+        let db = []; // Pangkalan Data Tempatan
         
-        // Pangkalan Data Array
-        let db = [];
-        
-        // Firebase Setup
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-        
-        let firestoreDb = null;
-        let currentUser = null;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kseeds-asrama-app';
-
-        // Initialize sistem
         window.onload = function() {
-            // Pastikan elemen wujud sebelum init
-            if (Object.keys(firebaseConfig).length > 0) {
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                firestoreDb = getFirestore(app);
-
-               https://script.google.com/macros/s/AKfycbwuKjcizx52EtCdsFJQ7d_EwcXJP7nJNdAJfqGQeMeBywvojA3HjPW1x_ImDh9OmBq-/exec const initAuth = async () => {
-                    try {
-                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                            await signInWithCustomToken(auth, __initial_auth_token);
-                        } else {
-                            await signInAnonymously(auth);
-                        }
-                    } catch (error) {
-                        console.error("Auth Error", error);
-                    }
-                };
-                initAuth();
-
-                onAuthStateChanged(auth, (user) => {
-                    currentUser = user;
-                    if (user) setupFirestoreListener();
-                });
-            } else {
-                // Fallback ke local storage jika Firebase tiada (Offline/Biasa)
+            if(GAS_URL === "") {
+                alert("SILA AMBIL PERHATIAN: Pautan Google Sheets belum diisi di dalam kod HTML (GAS_URL). Sistem akan menggunakan storan sementara offline sehingga pautan diisi.");
+                // Jika kosong, guna local storage biasa (Fallback)
                 db = JSON.parse(localStorage.getItem('asrama_kseeds_data')) || [];
-                window.switchView('parent'); // Mula di paparan ibu bapa
+                window.switchView('parent');
+                renderAdminTable();
+            } else {
+                window.switchView('parent');
+                window.muatTurunData(); // Tarik data dari Google Sheets
             }
 
-            // Bind Event Listener pada Input Password
             const passInput = document.getElementById('input-password');
             if (passInput) {
-                passInput.addEventListener('keypress', function(e) {
+            https://script.google.com/macros/s/AKfycbzhlwd4HM5ywQrydOMTFqW24kq5oQUkPVr107VjdX_rHKP2ypkLSgIsL0PDIez4iCGLHg/exec
+            passInput.addEventListener('keypress', function(e) {
                     if (e.key === 'Enter') window.sahkanKatalaluan();
                 });
             }
         };
 
-        function setupFirestoreListener() {
-            if (!currentUser) return;
-            const colRef = collection(firestoreDb, 'artifacts', appId, 'public', 'data', 'pelajar');
-            onSnapshot(colRef, (snapshot) => {
-                db = [];
-                snapshot.forEach((doc) => {
-                    db.push({ id: doc.id, ...doc.data() });
-                });
-                
-                // Segarkan UI secara automatik jika data berubah
-                const viewAdmin = document.getElementById('view-admin');
-                if (viewAdmin && !viewAdmin.classList.contains('hidden')) {
+        // FUNGSI TARIK DATA DARI GOOGLE SHEETS
+        window.muatTurunData = function() {
+            if(!GAS_URL) return;
+            showToast("Sedang menyegerak data Google Sheets...", true);
+            
+            fetch(GAS_URL)
+                .then(res => res.json())
+                .then(data => {
+                    db = data; // Kemas kini dari Sheets
+                    localStorage.setItem('asrama_kseeds_data', JSON.stringify(db)); // Simpan salinan offline
+                    showToast("Data Google Sheets dikemas kini!");
+                    
+                    const viewAdmin = document.getElementById('view-admin');
+                    if (viewAdmin && !viewAdmin.classList.contains('hidden')) {
+                        renderAdminTable();
+                    } else {
+                        window.carianIbuBapa();
+                    }
+                })
+                .catch(err => {
+                    console.error("Gagal menyegerak: ", err);
+                    showToast("Ralat: Menggunakan data luar talian (Offline).");
+                    db = JSON.parse(localStorage.getItem('asrama_kseeds_data')) || [];
                     renderAdminTable();
-                } else {
-                    window.carianIbuBapa();
-                }
-            }, (error) => {
-                console.error("Firestore Error", error);
-            });
-            window.switchView('parent');
-        }
+                });
+        };
 
+        // FUNGSI KAWALAN PAPARAN
         window.switchView = function(viewName) {
             const viewAdmin = document.getElementById('view-admin');
             const viewParent = document.getElementById('view-parent');
@@ -323,7 +304,6 @@
             if (!viewAdmin || !viewParent || !modalPassword || !tabParent || !tabAdmin) return;
 
             if (viewName === 'admin' && !isAdmloggedIn) {
-                // Tunjuk modal kata laluan
                 modalPassword.classList.remove('hidden');
                 document.getElementById('input-password').value = '';
                 document.getElementById('error-password').classList.add('hidden');
@@ -374,41 +354,54 @@
             }
         };
 
-        window.simpanRekod = async function() {
+        // FUNGSI SIMPAN DATA (KE GOOGLE SHEETS)
+        window.simpanRekod = function() {
             const id = document.getElementById('form-id').value;
             const nama = document.getElementById('form-nama').value.trim().toUpperCase();
             const pibg = parseFloat(document.getElementById('form-pibg').value) || 0;
             const tshirt = parseFloat(document.getElementById('form-tshirt').value) || 0;
             const lawatan = parseFloat(document.getElementById('form-lawatan').value) || 0;
 
-            if (nama === '') {
-                alert("Sila masukkan nama murid."); return;
-            }
+            if (nama === '') { alert("Sila masukkan nama murid."); return; }
 
             const docId = id ? id.toString() : Date.now().toString();
-            const rekod = { nama, pibg, tshirt, lawatan };
+            const rekod = { id: docId, nama, pibg, tshirt, lawatan };
 
-            if (firestoreDb && currentUser) {
-                try {
-                    const docRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'pelajar', docId);
-                    await setDoc(docRef, rekod);
-                    showToast("Maklumat berjaya disimpan ke Cloud!");
-                } catch(e) {
-                    showToast("Ralat menyimpan data.");
-                }
-            } else {
-                // Fallback Local
+            if (!GAS_URL) {
+                // Fallback Offline
                 if(id) {
                     const idx = db.findIndex(r => r.id == id);
-                    if(idx > -1) db[idx] = {id: docId, ...rekod};
+                    if(idx > -1) db[idx] = rekod;
                 } else {
-                    db.push({id: docId, ...rekod});
+                    db.push(rekod);
                 }
                 localStorage.setItem('asrama_kseeds_data', JSON.stringify(db));
                 renderAdminTable();
-                showToast("Maklumat disimpan (Local).");
+                showToast("Maklumat disimpan (Local). Sila isi URL Google Sheets.");
+                window.kosongkanBorang();
+                return;
             }
-            window.kosongkanBorang();
+
+            showToast("Menyimpan ke pangkalan data Google...", true);
+            
+            // Hantar data ke Google Apps Script (POST)
+            fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'save', data: rekod }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    showToast("Maklumat berjaya direkod ke Google Sheets!");
+                    window.muatTurunData(); // Reload jadual
+                    window.kosongkanBorang();
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Ralat menghantar data ke Google Sheets.");
+            });
         };
 
         window.kosongkanBorang = function() {
@@ -431,24 +424,35 @@
             }
         };
 
-        window.padamRekod = async function(id) {
+        window.padamRekod = function(id) {
             const confirmDelete = confirm("Adakah anda pasti mahu memadam rekod ini?");
             if (!confirmDelete) return;
 
-            if (firestoreDb && currentUser) {
-                try {
-                    const docRef = doc(firestoreDb, 'artifacts', appId, 'public', 'data', 'pelajar', id.toString());
-                    await deleteDoc(docRef);
-                    showToast("Rekod dipadam dari Cloud.");
-                } catch(e) {
-                    showToast("Ralat memadam data.");
-                }
-            } else {
+            if (!GAS_URL) {
                 db = db.filter(r => r.id != id);
                 localStorage.setItem('asrama_kseeds_data', JSON.stringify(db));
                 renderAdminTable();
                 showToast("Rekod dipadam (Local).");
+                return;
             }
+
+            showToast("Memadam rekod dari Google Sheets...", true);
+            
+            fetch(GAS_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'delete', id: id }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+            })
+            .then(res => res.json())
+            .then(res => {
+                if(res.status === 'success') {
+                    showToast("Rekod dipadam sepenuhnya!");
+                    window.muatTurunData(); // Reload
+                }
+            })
+            .catch(err => {
+                showToast("Ralat memadam data.");
+            });
         };
 
         function renderAdminTable() {
@@ -584,7 +588,6 @@
 
             showToast("Menjana PDF... Sila tunggu.");
 
-            // Hasilkan HTML murni khas untuk PDF dengan saiz tetap 800px untuk elak lari format
             const htmlContent = `
                 <div style="font-family: Arial, sans-serif; padding: 40px; color: #000; background: #fff; width: 800px; max-width: 800px;">
                     <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
@@ -638,10 +641,8 @@
                 </div>
             `;
 
-            // Proses rendering PDF
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = htmlContent;
-            // Letakkan element di luar pandangan supaya ia wujud dalam DOM untuk dirender
             tempDiv.style.position = 'absolute';
             tempDiv.style.left = '-9999px';
             tempDiv.style.top = '0';
@@ -656,7 +657,7 @@
             };
 
             window.html2pdf().set(opt).from(tempDiv).save().then(() => {
-                document.body.removeChild(tempDiv); // Buang elemen selepas siap muat turun
+                document.body.removeChild(tempDiv);
                 showToast("Resit berjaya dimuat turun!");
             }).catch(err => {
                 document.body.removeChild(tempDiv);
@@ -665,14 +666,24 @@
             });
         };
 
-        function showToast(msg) {
+        function showToast(msg, isLoading = false) {
             const toast = document.getElementById('toast-notif');
+            const icon = document.getElementById('toast-icon');
             if(!toast) return;
+            
             document.getElementById('toast-msg').innerText = msg;
+            
+            if (isLoading) {
+                icon.className = "fa-solid fa-spinner fa-spin text-sky-400";
+            } else {
+                icon.className = "fa-solid fa-circle-check text-emerald-400";
+            }
+            
             toast.classList.remove('translate-y-20', 'opacity-0');
+            
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            }, isLoading ? 4000 : 3000);
         }
     </script>
 </body>
